@@ -1,9 +1,10 @@
-# Quoridor (3.0)
+# Quoridor (Desktop 3.1)
 
 This is the third form of my Quoridor application, now with support for online play
 ## Instructions for Build and Use
 
-(Software demo pending - I will not have what I need to record it until Monday)
+[Program Demo](https://youtu.be/HwVgqUxwNkE)
+[Code Walkthrough](https://youtu.be/nRZWxrCgj7s)
 
 Steps to build and/or run the software:
 
@@ -45,4 +46,4 @@ The following items I plan to fix, improve, and/or add to this project in the fu
 
 * [ ] Allow players to choose their own name/color
 * [ ] Make my own graphical skin, rather than use a pre-baked one
-* [ ] Create a version to run from other device types
+* [ ] Add images to the rules to illustrate

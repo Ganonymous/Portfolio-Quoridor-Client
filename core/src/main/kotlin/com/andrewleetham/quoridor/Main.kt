@@ -596,7 +596,7 @@ class Main : ApplicationAdapter() {
 
         label = Label("The boxes at the top of the screen show the players in order, as well as how many walls each has left.\n" +
             "Below that is a line saying whose turn it is.\n" +
-            "On the right are three buttons to allow you to choose to move your piece or place a wall. The system defaults to moving whenever the game loads, or to the same action as the previous player. If you have no walls remaining, the buttons for wall placement will not function.\n" +
+            "On the right are three buttons to allow you to choose to move your piece or place a wall. The system defaults to moving whenever the game loads and during online play, or to the same action as the previous player during local play. If you have no walls remaining, the buttons for wall placement will not function.\n" +
             "To the left is the board. Each space shows as a square. Each player's piece appears as a colored dotted circle of the same color as their box at the top of the screen. Walls appear as dark rectangles between the spaces. \n" +
             "When you have selected to move your piece, the spaces you can move to are highlighted in blue. Click on one of these highlighted spaces to move there.\n" +
             "When you have selected to place a wall, hovering the mouse over the board will add a preview of a wall based on the current mouse position. It will be blue if that is a legal place to put a wall, or red if you cannot put a wall there. When the preview is blue, simply click to place a wall at the preview position.", skin )
@@ -622,12 +622,15 @@ class Main : ApplicationAdapter() {
         val state = controller.getGameState() as RunningGameState
         val table = Table()
 
+        val showMoves = (controller is LocalController) || (state.players[state.currentPlayerIndex].name == myName)
+
+
         //Display the players
         val playersTable = buildPlayersTable(state)
         table.add(playersTable).growX().colspan(2)
         table.row()
 
-        val boardTable = buildBoardTable(state)
+        val boardTable = buildBoardTable(state, showMoves)
         boardTable.name = "boardTable"
         table.add(boardTable).center().expandX()
 
@@ -635,9 +638,9 @@ class Main : ApplicationAdapter() {
         val label = Label("Move Options", skin)
         turnOptionsTable.add(label)
         turnOptionsTable.row()
-        if (state.players[state.currentPlayerIndex].walls < 1) currentAction = TurnAction.MOVE
+        if (state.players[state.currentPlayerIndex].walls < 1 || !showMoves) currentAction = TurnAction.MOVE
         var textButton = TextButton("Place Wall (Horizontal)", skin)
-        textButton.isDisabled = currentAction == (TurnAction.WALL_HORIZONTAL) || state.players[state.currentPlayerIndex].walls < 1
+        textButton.isDisabled = currentAction == (TurnAction.WALL_HORIZONTAL) || state.players[state.currentPlayerIndex].walls < 1 || !showMoves
         textButton.addListener(object : ChangeListener(){
             override fun changed(event: ChangeEvent?, actor: Actor?) {
                 currentAction = TurnAction.WALL_HORIZONTAL
@@ -647,7 +650,7 @@ class Main : ApplicationAdapter() {
         turnOptionsTable.add(textButton).center().expandY()
         turnOptionsTable.row()
         textButton = TextButton("Place Wall (Vertical)", skin)
-        textButton.isDisabled = (currentAction == TurnAction.WALL_VERTICAL) || state.players[state.currentPlayerIndex].walls < 1
+        textButton.isDisabled = (currentAction == TurnAction.WALL_VERTICAL) || state.players[state.currentPlayerIndex].walls < 1 || !showMoves
         textButton.addListener(object : ChangeListener(){
             override fun changed(event: ChangeEvent?, actor: Actor?) {
                 currentAction = TurnAction.WALL_VERTICAL
@@ -657,7 +660,7 @@ class Main : ApplicationAdapter() {
         turnOptionsTable.add(textButton).center().expandY()
         turnOptionsTable.row()
         textButton = TextButton("Move", skin)
-        textButton.isDisabled = currentAction == TurnAction.MOVE
+        textButton.isDisabled = currentAction == TurnAction.MOVE || !showMoves
         textButton.addListener(object : ChangeListener(){
             override fun changed(event: ChangeEvent?, actor: Actor?) {
                 currentAction = TurnAction.MOVE
@@ -768,7 +771,7 @@ class Main : ApplicationAdapter() {
         return table
     }
 
-    fun buildBoardTable(state: RunningGameState): Table {
+    fun buildBoardTable(state: RunningGameState, showMoves: Boolean): Table {
         val core = QuoridorCore()
         core.fromRunningGameState(state)
         val cellSize = 48f
@@ -808,7 +811,7 @@ class Main : ApplicationAdapter() {
                 }
 
                 // highlight
-                if (currentAction == TurnAction.MOVE) {
+                if (currentAction == TurnAction.MOVE && showMoves) {
                     val legalMoves = core.validMoves(
                         core.getPlayer(state.currentPlayerIndex).position.first,
                         core.getPlayer(state.currentPlayerIndex).position.second
